@@ -7,8 +7,11 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface ClientMapper {
+    @Mapping(target = "utilisateurId", source = "utilisateur.id")
     ClientDTO toDto(Client entity);
 
     @Mapping(target = "utilisateur", ignore = true)
+    @Mapping(target = "reservations", ignore = true)
+    @Mapping(target = "demandes", ignore = true)
     Client toEntity(ClientDTO dto);
 }

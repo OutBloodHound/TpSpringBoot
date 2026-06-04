@@ -10,6 +10,7 @@ public interface PrestataireMapper {
     PrestataireDTO toDto(Prestataire entity);
 
     @Mapping(target = "utilisateur", ignore = true)
+    @Mapping(target = "demandes", ignore = true)
     @Mapping(target = "specialites", ignore = true)
     @Mapping(target = "notations", ignore = true)
     Prestataire toEntity(PrestataireDTO dto);

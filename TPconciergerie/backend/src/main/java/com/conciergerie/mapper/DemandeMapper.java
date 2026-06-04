@@ -7,6 +7,9 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface DemandeMapper {
+    @Mapping(target = "clientId", source = "client.id")
+    @Mapping(target = "prestataireId", source = "prestataire.id")
+    @Mapping(target = "categorieId", source = "categorie.id")
     DemandeDTO toDto(Demande entity);
 
     @Mapping(target = "client", ignore = true)

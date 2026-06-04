@@ -8,9 +8,10 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface UtilisateurMapper {
-    UtilisateurDTO toDo(Utilisateur entity);
+    UtilisateurDTO toDto(Utilisateur entity);
 
     @Mapping(target = "motDePasse", ignore = true)
+    @Mapping(target = "creeLe", ignore = true)
     @Mapping(target = "clients", ignore = true)
     @Mapping(target = "prestataires", ignore = true)
     @Mapping(target = "commentaires", ignore = true)
