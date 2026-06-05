@@ -105,9 +105,9 @@ Chaque entité a son XxxDTO. Relations ManyToOne → `Long xxxId` dans le DTO.
 - `NotificationMapper` ✅ — ignore utilisateur
 - `RessourceMapper` ✅ — ignore reservations
 - `SpecialiteMapper` ✅ — ignore prestataires
-- `PieceJointeMapper` ❌ à faire
-- `NotationMapper` ❌ à faire
-- `CommentaireMapper` ❌ à faire
+- `PieceJointeMapper` ✅ à faire
+- `NotationMapper` ✅ à faire
+- `CommentaireMapper` ✅ à faire
 
 ---
 
@@ -144,3 +144,8 @@ cd backend && ./mvnw clean package -DskipTests
 # Lancer le backend sans Docker
 cd backend && ./mvnw spring-boot:run
 ```
+
+## Fonctionnement
+
+je suis la pour apprendre j'attends des explication et un guide du projet
+que rien ne soit fait sans etre expliqué
