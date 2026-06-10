@@ -61,4 +61,34 @@ public class DemandeService {
         entity = repository.save(entity);
         return mapper.toDto(entity);
     }
+
+    public DemandeDTO update (Long id, DemandeDTO dto){
+        Demande existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Demande", id));
+        Client client = clientRepository.findById(dto.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client", dto.getClientId()));
+        Categorie categorie = categorieRepository.findById(dto.getCategorieId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categorie", dto.getCategorieId()));
+
+        Demande entity = mapper.toEntity(dto);
+        entity.setId(id);
+        entity.setClient(client);
+        entity.setCategorie(categorie);
+        entity.setCreeLe(existing.getCreeLe());
+
+        if (dto.getPrestataireId() != null) {
+            Prestataire prestataire = prestataireRepository.findById(dto.getPrestataireId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Prestataire", dto.getPrestataireId()));
+            entity.setPrestataire(prestataire);
+        }
+        entity = repository.save(entity);
+        return mapper.toDto(entity);
+    }
+
+    public void delete(Long id){
+        Demande existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Demande", id));
+
+        repository.deleteById(id);
+    }
 }

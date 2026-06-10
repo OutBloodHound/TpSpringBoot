@@ -13,4 +13,5 @@ public class NotificationDTO {
     private String lien;
     private boolean lu;
     private LocalDateTime creeLe;
+    private Long utilisateurId;
 }

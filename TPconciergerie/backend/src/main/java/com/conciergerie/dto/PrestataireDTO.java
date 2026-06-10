@@ -10,4 +10,5 @@ public class PrestataireDTO {
     private float noteMoyenne;
     private int nbInterventions;
     private boolean disponible = true;
+    private Long utilisateurId;
 }

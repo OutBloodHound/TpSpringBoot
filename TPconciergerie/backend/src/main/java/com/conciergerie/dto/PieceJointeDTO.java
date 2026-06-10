@@ -13,4 +13,5 @@ public class PieceJointeDTO {
     private String mimeType;
     private int tailleOctets;
     private LocalDateTime creeLe;
+    private Long demandeId;
 }

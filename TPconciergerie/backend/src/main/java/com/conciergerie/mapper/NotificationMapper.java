@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface NotificationMapper {
+    @Mapping(target = "utilisateurId", source = "utilisateur.id")
     NotificationDTO toDto(Notification entity);
 
     @Mapping(target = "utilisateur", ignore = true)

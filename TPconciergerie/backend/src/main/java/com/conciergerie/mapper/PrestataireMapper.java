@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface PrestataireMapper {
+    @Mapping(target = "utilisateurId", source = "utilisateur.id")
     PrestataireDTO toDto(Prestataire entity);
 
     @Mapping(target = "utilisateur", ignore = true)

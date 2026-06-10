@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface PieceJointeMapper {
+    @Mapping(target = "demandeId", source = "demande.id")
     PieceJointeDTO toDto(PieceJointe entity);
 
     @Mapping(target = "demande", ignore = true)

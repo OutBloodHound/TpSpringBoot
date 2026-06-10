@@ -7,7 +7,7 @@
 |---|---|
 | Java | 17 |
 | Spring Boot | 3.2.5 |
-| Maven | Wrapper (./mvnw) |
+| Maven | 3.9.16 (global) |
 | Base de données | MySQL 8.0 |
 | Migration BDD | Flyway |
 | ORM | JPA / Hibernate (MySQL8Dialect) |
@@ -46,11 +46,42 @@
 
 ---
 
-## Architecture
+## Architecture — Flux des données
 
 ```
-Entity → Repository → DTO → Mapper → Service → Controller
-base path: /api
+Navigator (React)                http://localhost:3000
+        │  Requêtes HTTP (fetch/axios)
+        ▼
+CONTROLLERS  ← squelettes vides actuellement
+  Rôle : recevoir la requête, appeler le Service, retourner le DTO en JSON
+        │
+        ▼
+┌──────────────────────────────────────────────────┐
+│ SECURITY                                         │
+│  JwtUtil      ← générer/valider JWT              │
+│  JwtFilter    ← intercepter requêtes (Bearer)    │
+│  SecurityConfig ← routes publiques/protégées     │
+│  CorsConfig   ← autoriser le frontend React      │
+└──────────────────────────────────────────────────┘
+        │
+        ▼
+SERVICES  (logique métier)
+  Chaque service = CRUD :
+  findAll() → findById() → create() → update() → delete()
+        │
+        ▼
+MAPPER (MapStruct)  ← convertit Entity ↔ DTO
+        │
+        ▼
+REPOSITORY (Spring Data JPA)  ← requêtes SQL
+        │
+        ▼
+BASE DE DONNÉES  MySQL 8.0
+
+Schéma de dépendance : Controller → Service → Mapper → Repository → DB
+                                           ↘
+                                           DTO
+Toutes les réponses sont en JSON. Base path : /api
 ```
 
 ---
@@ -82,9 +113,9 @@ base path: /api
 - `SpecialiteRepository` — `findByLibelle(String): Optional`
 - `RessourceRepository` — `findByTypeRessource(TypeRessource): List`, `findByActifTrue(): List`
 - `NotificationRepository` — `findByUtilisateurId(Long): List`, `findByUtilisateurIdAndLuFalse(Long): List`
-- `PieceJointeRepository` — à faire
-- `NotationRepository` — à faire
-- `CommentaireRepository` — à faire
+- `PieceJointeRepository` — `findByDemandeId(Long): List`
+- `NotationRepository` — `findByDemandeId(Long): List`, `findByPrestataireId(Long): List`
+- `CommentaireRepository` — `findByDemandeId(Long): List`
 
 ### dto/ (12 classes, Lombok @Data)
 Chaque entité a son XxxDTO. Relations ManyToOne → `Long xxxId` dans le DTO.
@@ -93,31 +124,66 @@ Chaque entité a son XxxDTO. Relations ManyToOne → `Long xxxId` dans le DTO.
 - `ReservationDTO` : clientId, ressourceId
 - `CommentaireDTO` : demandeId, utilisateurId
 - `NotationDTO` : demandeId, prestataireId
-- Autres : pas de FK nécessaire (Categorie, Specialite, Ressource, PieceJointe, Notification, Prestataire, Utilisateur)
+- `NotificationDTO` : utilisateurId
+- `PieceJointeDTO` : demandeId
+- `PrestataireDTO` : utilisateurId
+- Autres : pas de FK nécessaire (Categorie, Specialite, Ressource, Utilisateur)
 
-### mapper/ (9 interfaces MapStruct sur 12)
-- `UtilisateurMapper` ✅ — ignore motDePasse + 4 relations
-- `ClientMapper` ✅ — ignore utilisateur
-- `PrestataireMapper` ✅ — ignore utilisateur, specialites, notations
-- `DemandeMapper` ✅ — ignore client, prestataire, categorie, commentaires, notations, pieceJointes
-- `ReservationMapper` ✅ — ignore client, ressource
-- `CategorieMapper` ✅ — ignore demandes
-- `NotificationMapper` ✅ — ignore utilisateur
-- `RessourceMapper` ✅ — ignore reservations
-- `SpecialiteMapper` ✅ — ignore prestataires
-- `PieceJointeMapper` ✅ à faire
-- `NotationMapper` ✅ à faire
-- `CommentaireMapper` ✅ à faire
-
+### mapper/ (12 interfaces MapStruct — toutes terminées)
+- `UtilisateurMapper` — ignore motDePasse + 4 relations
+- `ClientMapper` — ignore utilisateur ; mappe `utilisateur.id` → `utilisateurId`
+- `PrestataireMapper` — ignore utilisateur, specialites, notations ; mappe `utilisateur.id` → `utilisateurId`
+- `DemandeMapper` — ignore client, prestataire, categorie, commentaires, notations, pieceJointes ; mappe les IDs
+- `ReservationMapper` — ignore client, ressource ; mappe `client.id` → `clientId`, `ressource.id` → `ressourceId`
+- `CategorieMapper` — ignore demandes
+- `NotificationMapper` — ignore utilisateur ; mappe `utilisateur.id` → `utilisateurId`
+- `RessourceMapper` — ignore reservations
+- `SpecialiteMapper` — ignore prestataires
+- `PieceJointeMapper` — ignore demande ; mappe `demande.id` → `demandeId`
+- `NotationMapper` — ignore demande, prestataire ; mappe `demande.id` → `demandeId`, `prestataire.id` → `prestataireId`
+- `CommentaireMapper` — ignore demande, utilisateur ; mappe `demande.id` → `demandeId`, `utilisateur.id` → `utilisateurId`
+- 
 ---
+### service/ (12 services — tous terminés)
+- `ClientService` — CRUD + FK utilisateur
+- `UtilisateurService` — CRUD + hash motDePasse
+- `DemandeService` — CRUD + FK client, categorie, prestataire (optionnel)
+- `PrestataireService` — CRUD + FK utilisateur
+- `CategorieService` — CRUD simple (pas de FK)
+- `SpecialiteService` — CRUD simple (pas de FK)
+- `RessourceService` — CRUD simple (pas de FK)
+- `ReservationService` — CRUD + FK client, ressource
+- `CommentaireService` — CRUD + FK demande, utilisateur
+- `NotationService` — CRUD + FK demande, prestataire
+- `NotificationService` — CRUD + FK utilisateur
+- `PieceJointeService` — CRUD + FK demande
+- 
 
 ## ⬜ À faire
 
-### service/ (logique métier)
-### controller/ (endpoints REST — squelettes existent mais vides)
-### security/ (JWT — JwtFilter, JwtUtil, SecurityConfig vides)
-### config/ (CorsConfig à remplir)
-### exception/ (GlobalExceptionHandler à remplir)
+### security/ (JWT)
+- `JwtUtil.java` ✅ — génère et valide les tokens (access + refresh)
+- `JwtFilter.java` ⬜ — intercepte les requêtes et vérifie le token
+- `SecurityConfig.java` ⬜ — configure les routes publiques/protégées, CORS, BCrypt
+
+### config/
+- `CorsConfig.java` ⬜ — à créer (actuellement un squelette vide `CorsConfing.java`)
+- Renommer `CorsConfing.java` → `CorsConfig.java` (typo)
+
+### exception/
+- `GlobalExceptionHandler.java` 🟡 — ne gère que `ResourceNotFoundException`
+- À ajouter : validation errors (400), authentification errors (401), générique (500)
+
+### controller/ (endpoints REST)
+- 5 squelettes vides existent : `AuthController`, `DemandeController`, `NotificationController`, `PrestataireController`, `ReservationController`
+- 7 à créer : `CategorieController`, `CommentaireController`, `NotationController`, `PieceJointeController`, `RessourceController`, `SpecialiteController`, `UtilisateurController`
+
+### Flyway
+- Configuré dans `application.yml` mais aucune migration écrite
+- Actuellement le schéma est bootstrappé via `init.sql`
+
+### Tests
+- Aucun test écrit (dépendances présentes dans le pom.xml : `spring-boot-starter-test`, `h2`)
 
 ---
 
@@ -138,11 +204,14 @@ docker compose --profile dev up -d
 # Lancer phpMyAdmin uniquement
 docker compose --profile dev up -d phpmyadmin
 
+# Compiler le backend
+cd backend && mvn clean compile -DskipTests
+
 # Build du backend sans Docker
-cd backend && ./mvnw clean package -DskipTests
+cd backend && mvn clean package -DskipTests
 
 # Lancer le backend sans Docker
-cd backend && ./mvnw spring-boot:run
+cd backend && mvn spring-boot:run
 ```
 
 ## Fonctionnement
