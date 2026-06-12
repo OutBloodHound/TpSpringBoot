@@ -1,15 +1,27 @@
 package com.conciergerie.security;
+// Paquetage qui regroupe toute la sécurité (JWT, filtre, config)
 
 import com.conciergerie.entity.RoleUtilisateur;
+// L'enum des rôles : ADMIN, CONCIERGE, PRESTATAIRE, CLIENT
+// Servira à stocker le rôle dans le token JWT
 import io.jsonwebtoken.Claims;
+// Claims = le "corps" du token JWT (les données qu'il contient : subject, role, dates...)
 import io.jsonwebtoken.Jwts;
+// Classe principale de la librairie JJWT : permet de builder, parser, signer les tokens
 import io.jsonwebtoken.security.Keys;
+// Utilitaire pour créer une clé HMAC sécurisée à partir d'une chaîne
 import org.springframework.beans.factory.annotation.Value;
+// Injecte une valeur depuis application.yml (ex: ${application.security.jwt.secret-key})
 import org.springframework.stereotype.Component;
+// Annotation Spring : déclare cette classe comme un bean géré par le conteneur Spring
+// Pourra être injecté (via @Autowired) dans d'autres classes
 
 import javax.crypto.SecretKey;
+// Type Java pour représenter une clé secrète (utilisée pour signer/valider les JWT)
 import java.nio.charset.StandardCharsets;
+//Fournit UTF_8 pour convertir la chaîne secrète en bytes de façon standardisée
 import java.util.Date;
+// Pour les dates d'émission (issuedAt) et d'expiration du token
 
 @Component
 public class JwtUtil {
